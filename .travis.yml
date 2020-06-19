@@ -1,0 +1,24 @@
+language: generic
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build -t lwheng/multi-docker -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true lwheng/multi-docker npm test
+
+after_success:
+  - docker build -t lwheng/multi-client ./client
+  - docker build -t lwheng/multi-nginx ./nginx
+  - docker build -t lwheng/multi-server ./server
+  - docker build -t lwheng/multi-worker ./worker
+  # Log in to Docker Hub
+  - docker login -u $DOCKER_ID -p $DOCKER_PASSWORD
+  # Push them to Docker Hub
+  - docker push lwheng/multi-client
+  - docker push lwheng/multi-nginx
+  - docker push lwheng/multi-server
+  - docker push lwheng/multi-worker
+
